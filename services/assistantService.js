@@ -12,7 +12,7 @@ Answer using ONLY this clinic information:
 
 If the answer is not in this information, say you don't know and suggest calling the clinic.
 Do not give medical advice or discuss symptoms, diagnoses, or treatments. If asked, say you can't give medical advice, offer to book the right specialist, and suggest urgent/emergency care if it sounds serious.
-Keep answers short and friendly. End every reply with exactly this one-line sign-off: — Lakeside Medical, powered by Londo`;
+Keep answers short and friendly. End every reply with exactly this one-line sign-off: — Lakeside Medical, powered by Paul`;
 
 let client;
 
