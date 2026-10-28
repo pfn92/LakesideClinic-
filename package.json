@@ -1,0 +1,25 @@
+{
+  "name": "lakeside-medical-clinic",
+  "version": "1.0.0",
+  "description": "Landing page for Lakeside Medical Clinic in JLT, Dubai",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "clinic",
+    "express",
+    "ejs"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "bcryptjs": "^3.0.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.19.0",
+    "nodemailer": "^10.2.1",
+    "stripe": "^23.0.1"
+  }
+}

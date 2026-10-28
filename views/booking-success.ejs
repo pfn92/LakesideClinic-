@@ -1,0 +1,32 @@
+<%- include('partials/header', { clinic }) %>
+
+<main class="booking-page">
+  <section class="booking-hero">
+    <div class="container">
+      <p class="eyebrow">Appointment payment</p>
+      <h1><%= paid ? 'Booking confirmed' : 'Payment not completed' %></h1>
+      <p><%= message %></p>
+    </div>
+  </section>
+  <section class="booking-section section-padding">
+    <div class="container">
+      <div class="booking-card confirmation-card">
+        <div class="booking-summary">
+          <% if (booking) { %>
+            <div><span>Booking ID</span><strong>#<%= booking.id %></strong></div>
+            <div><span>Specialty</span><strong><%= booking.specialty %></strong></div>
+            <div><span>Doctor</span><strong><%= booking.doctor %></strong></div>
+            <div><span>Appointment</span><strong><%= booking.appointmentDateTime %></strong></div>
+            <div><span>Status</span><strong><%= booking.status %></strong></div>
+          <% } else { %>
+            <div><span>Status</span><strong>Payment not confirmed</strong></div>
+          <% } %>
+        </div>
+        <a class="btn btn-primary" href="/booking">Return to booking</a>
+        <% if (user) { %><a class="text-link ms-3" href="/my-appointments">View my appointments <i class="bi bi-arrow-right ms-1"></i></a><% } %>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer', { clinic }) %>

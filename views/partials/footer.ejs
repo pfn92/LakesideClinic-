@@ -1,0 +1,102 @@
+<footer class="site-footer">
+  <p>&copy; <%= new Date().getFullYear() %> Lakeside Medical Clinic</p>
+</footer>
+
+<div class="assistant-widget" data-assistant-widget>
+  <button class="assistant-launcher" type="button" aria-expanded="false" aria-controls="assistant-panel">
+    <span aria-hidden="true">✦</span> Ask Lakeside
+  </button>
+  <section class="assistant-panel" id="assistant-panel" hidden aria-label="Ask Lakeside chat">
+    <header class="assistant-header">
+      <div>
+        <strong>Ask Lakeside</strong>
+        <small>Clinic information assistant</small>
+      </div>
+      <button class="assistant-close" type="button" aria-label="Close chat">&times;</button>
+    </header>
+    <div class="assistant-messages" aria-live="polite">
+      <p class="assistant-message assistant-message--bot">Hi! I can help with clinic information and booking a specialist.</p>
+    </div>
+    <form class="assistant-form">
+      <label class="sr-only" for="assistant-input">Message Ask Lakeside</label>
+      <input id="assistant-input" name="message" type="text" maxlength="4000" placeholder="Ask about hours, doctors…" autocomplete="off" required>
+      <button type="submit" aria-label="Send message">Send</button>
+    </form>
+  </section>
+</div>
+
+<style>
+  .assistant-widget { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 1000; font-family: inherit; }
+  .assistant-launcher { border: 0; border-radius: 999px; background: #0f766e; color: #fff; padding: .8rem 1.1rem; box-shadow: 0 8px 24px rgba(15,118,110,.28); cursor: pointer; font-weight: 700; }
+  .assistant-panel { width: min(22rem, calc(100vw - 2rem)); margin-bottom: .75rem; overflow: hidden; border: 1px solid #d9e5e4; border-radius: 1rem; background: #fff; box-shadow: 0 16px 45px rgba(15, 23, 42, .18); }
+  .assistant-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem; color: #fff; background: #115e59; }
+  .assistant-header strong, .assistant-header small { display: block; }
+  .assistant-header small { margin-top: .2rem; opacity: .8; font-size: .75rem; }
+  .assistant-close { border: 0; background: transparent; color: #fff; font-size: 1.5rem; cursor: pointer; }
+  .assistant-messages { display: flex; min-height: 8rem; max-height: 18rem; flex-direction: column; gap: .6rem; overflow-y: auto; padding: .9rem; background: #f7fbfb; }
+  .assistant-message { max-width: 88%; margin: 0; padding: .65rem .75rem; border-radius: .8rem; font-size: .9rem; line-height: 1.35; white-space: pre-wrap; }
+  .assistant-message--bot { align-self: flex-start; background: #e4f2f0; color: #134e4a; }
+  .assistant-message--user { align-self: flex-end; background: #0f766e; color: #fff; }
+  .assistant-form { display: flex; gap: .5rem; padding: .75rem; border-top: 1px solid #e5eeee; }
+  .assistant-form input { min-width: 0; flex: 1; border: 1px solid #cbdedc; border-radius: .55rem; padding: .6rem; font: inherit; }
+  .assistant-form button { border: 0; border-radius: .55rem; background: #0f766e; color: #fff; padding: 0 .8rem; cursor: pointer; }
+  .assistant-form button:disabled { opacity: .55; cursor: wait; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  @media (max-width: 480px) { .assistant-widget { right: 1rem; bottom: 1rem; } }
+</style>
+
+<script>
+  (() => {
+    const widget = document.querySelector('[data-assistant-widget]');
+    if (!widget) return;
+    const launcher = widget.querySelector('.assistant-launcher');
+    const panel = widget.querySelector('.assistant-panel');
+    const close = widget.querySelector('.assistant-close');
+    const form = widget.querySelector('.assistant-form');
+    const input = widget.querySelector('#assistant-input');
+    const messages = widget.querySelector('.assistant-messages');
+    const conversation = [];
+
+    function toggle(open) {
+      panel.hidden = !open;
+      launcher.setAttribute('aria-expanded', String(open));
+      if (open) input.focus();
+    }
+
+    function addMessage(text, role) {
+      const element = document.createElement('p');
+      element.className = `assistant-message assistant-message--${role}`;
+      element.textContent = text;
+      messages.appendChild(element);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    launcher.addEventListener('click', () => toggle(panel.hidden));
+    close.addEventListener('click', () => toggle(false));
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      conversation.push({ role: 'user', content: text });
+      addMessage(text, 'user');
+      input.value = '';
+      form.querySelector('button').disabled = true;
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: conversation }),
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || 'Unable to reach the assistant.');
+        conversation.push({ role: 'assistant', content: payload.reply });
+        addMessage(payload.reply, 'bot');
+      } catch (error) {
+        addMessage(error.message || 'Please try again or call the clinic.', 'bot');
+      } finally {
+        form.querySelector('button').disabled = false;
+        input.focus();
+      }
+    });
+  })();
+</script>

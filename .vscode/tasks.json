@@ -1,0 +1,745 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start clinic app",
+			"type": "shell",
+			"command": "npm.cmd",
+			"args": [
+				"start"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect booking implementation",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content package.json; Get-Content data/db.js; Get-Content server.js; Get-Content .gitignore; Get-ChildItem -Force -Name .env*"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect booking routes and views",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content routes/booking.js; Get-Content views/booking.ejs; Get-ChildItem views -Name; Get-ChildItem routes -Name; Get-Content .gitignore; Test-Path .env; Test-Path package-lock.json; Test-Path node_modules/stripe"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect appointment persistence",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content services/appointmentService.js; Get-Content routes/myAppointments.js; Get-Content views/partials/header.ejs; git status --short; Select-String -Path .env -Pattern '^STRIPE_SECRET_KEY\\s*=' -Quiet; Select-String -Path .env -Pattern '^BASE_URL\\s*=' -Quiet"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Add Stripe server SDK",
+			"type": "shell",
+			"command": "npm.cmd",
+			"args": [
+				"install",
+				"stripe"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Review database service changes",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content services/appointmentService.js; Get-Content data/db.js"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Configure local Stripe environment",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Add-Content -LiteralPath .env -Value 'STRIPE_SECRET_KEY='; Add-Content -LiteralPath .env -Value 'BASE_URL=http://localhost:3000'; if ((Get-Content .gitignore) -notcontains '.env') { Add-Content -LiteralPath .gitignore -Value '.env' };"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Add local Stripe settings",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Add-Content -LiteralPath .env -Value \"STRIPE_SECRET_KEY=\"; Add-Content -LiteralPath .env -Value \"BASE_URL=http://localhost:3000\""
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Stripe integration files",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"node --check data/db.js; node --check services/appointmentService.js; node --check routes/booking.js; node --check routes/bookingSuccess.js; node --check server.js; Write-Output ('STRIPE_SECRET_KEY configured: ' + [bool](Select-String -Path .env -Pattern '^STRIPE_SECRET_KEY\\s*=\\s*\\S' -Quiet)); Write-Output ('BASE_URL configured: ' + [bool](Select-String -Path .env -Pattern '^BASE_URL\\s*=\\s*\\S' -Quiet)); Write-Output ('Stripe dependency installed: ' + (Test-Path node_modules/stripe)); Get-Content routes/booking.js; Get-Content routes/bookingSuccess.js; Get-Content server.js"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Validate Stripe integration syntax and configuration",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"node --check data/db.js; node --check services/appointmentService.js; node --check routes/booking.js; node --check routes/bookingSuccess.js; node --check server.js; Get-Content .env | ForEach-Object { ($_ -split '=')[0] }; Test-Path node_modules/stripe; Get-Content .gitignore"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Validate Stripe integration syntax",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"node --check data/db.js; node --check services/appointmentService.js; node --check routes/booking.js; node --check routes/bookingSuccess.js; node --check server.js; npm.cmd ls stripe --depth=0"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check local app listener",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$c=Get-NetTCPConnection -State Listen -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c) { $p=Get-CimInstance Win32_Process -Filter \"ProcessId=$($c.OwningProcess)\"; Write-Output ($p.Name + ' ' + $p.ProcessId + ' ' + $p.CommandLine) } else { Write-Output 'No listener on port 3000' }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Restart clinic app with Stripe routes",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$c=Get-NetTCPConnection -State Listen -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c) { $p=Get-CimInstance Win32_Process -Filter \"ProcessId=$($c.OwningProcess)\"; if ($p.Name -eq \"node.exe\" -and $p.CommandLine.Contains(\"server.js\")) { Stop-Process -Id $p.ProcessId -Force; Write-Output \"Stopped previous clinic server\" } else { throw \"Port 3000 is owned by a process other than this clinic server\" } }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Stop previous clinic server",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$c=Get-NetTCPConnection -State Listen -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c) { Stop-Process -Id $c.OwningProcess -Force; Write-Output StoppedClinicServer }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Stripe key presence",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"if (Select-String -Path .env -Pattern '^STRIPE_SECRET_KEY\\s*=\\s*\\S' -Quiet) { Write-Output PRESENT } else { Write-Output MISSING_OR_EMPTY }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Recheck Stripe key presence",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"if (Select-String -Path .env -Pattern '^STRIPE_SECRET_KEY\\s*=\\s*\\S' -Quiet) { Write-Output PRESENT } else { Write-Output MISSING_OR_EMPTY }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Stripe test key format",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"if (Select-String -Path .env -Pattern '^STRIPE_SECRET_KEY\\s*=\\s*sk_test_\\S+' -Quiet) { Write-Output TEST_KEY_PRESENT } elseif (Select-String -Path .env -Pattern '^STRIPE_SECRET_KEY\\s*=\\s*\\S+' -Quiet) { Write-Output VALUE_PRESENT_BUT_NOT_TEST_KEY_FORMAT } else { Write-Output MISSING_OR_EMPTY }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Read browser workflow guidance",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content 'C:\\Users\\Paul\\.agents\\skills\\synced\\d3e5da8f-e63c-4914-83a0-81087ebb546d_fcdbd92d-1555-4cfa-a57b-cf05b62f3b68\\built-in-browser\\SKILL.md'"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Restart app for Stripe test",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$c=Get-NetTCPConnection -State Listen -LocalPort 3000 -ErrorAction SilentlyContinue | Select-Object -First 1; if ($c) { Stop-Process -Id $c.OwningProcess -Force; Write-Output Stopped }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Stripe booking smoke test",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".stripe-booking-smoke.js"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run Stripe booking integration test",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".stripe-booking-smoke.js"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify local clinic app",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"(Invoke-WebRequest -Uri http://localhost:3000 -UseBasicParsing -TimeoutSec 5).StatusCode"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Clean temporary test file",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Remove-Item -LiteralPath .stripe-booking-smoke.js -Force -ErrorAction SilentlyContinue"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Review Stripe booking implementation",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content routes/booking.js; Get-Content routes/bookingSuccess.js; Get-Content services/appointmentService.js; Get-Content data/db.js; Get-Content server.js; Get-Content package.json; if (Select-String -Path .env -Pattern '^STRIPE_SECRET_KEY\\s*=\\s*sk_test_\\S+' -Quiet) { Write-Output STRIPE_TEST_KEY_PRESENT } else { Write-Output STRIPE_TEST_KEY_MISSING_OR_EMPTY }; Get-Content .gitignore"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Read local browser skill instructions",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content C:\\Users\\Paul\\.agents\\skills\\synced\\d3e5da8f-e63c-4914-83a0-81087ebb546d_fcdbd92d-1555-4cfa-a57b-cf05b62f3b68\\built-in-browser\\SKILL.md"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Read local computer-use guidance",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content C:\\Users\\Paul\\.codex\\plugins\\cache\\openai-bundled\\computer-use\\26.1021.31345\\skills\\computer-use\\SKILL.md"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Read computer-use operating rules",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content C:\\Users\\Paul\\.codex\\plugins\\cache\\openai-bundled\\computer-use\\26.1021.31345\\docs\\guidance.md; Get-Content C:\\Users\\Paul\\.codex\\plugins\\cache\\openai-bundled\\computer-use\\26.1021.31345\\docs\\confirmations.md"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Read computer-use confirmation policy",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content C:\\Users\\Paul\\.codex\\plugins\\cache\\openai-bundled\\computer-use\\26.1021.31345\\docs\\confirmations.md"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Locate clinic server listener",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"netstat -ano | findstr LISTENING | findstr :3000"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Identify clinic server process",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-CimInstance Win32_Process -Filter ProcessId=27736 | Select-Object ProcessId,Name,CommandLine"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Stop clinic server before restart",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Stop-Process -Id 27736 -Force"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run full Stripe booking test",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".stripe-full-test.js"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check local base URL setting",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"if (Select-String -Path .env -Pattern '^BASE_URL\\s*=\\s*\\S+' -Quiet) { Write-Output BASE_URL_PRESENT } else { Write-Output BASE_URL_MISSING_OR_EMPTY }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Set local app base URL",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Add-Content -LiteralPath .env -Value \"BASE_URL=http://localhost:3000\""
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Locate restarted app process",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"netstat -ano | findstr LISTENING | findstr :3000"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Stop app to load BASE_URL",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Stop-Process -Id 18408 -Force"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Retry full Stripe booking test",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".stripe-full-test.js"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Create hosted Stripe test checkout",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				".stripe-open-checkout.js"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Clean synthetic Stripe test data",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"node .stripe-cleanup.js; Remove-Item -LiteralPath .stripe-cleanup.js,.stripe-full-test.js,.stripe-open-checkout.js -Force -ErrorAction SilentlyContinue"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check clinic project memory references",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Select-String -Path C:\\Users\\Paul\\.codex\\memories\\MEMORY.md -Pattern Paul_Clinic,Lakeside Medical Clinic"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Search clinic project memory",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Select-String -Path C:\\Users\\Paul\\.codex\\memories\\MEMORY.md -Pattern Paul_Clinic"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Read clinic project history",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content C:\\Users\\Paul\\.codex\\memories\\rollout_summaries\\2026-10-21T16-01-11-PfaK-clinic_express_ejs_booking_sqlite_auth_testing.md"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Confirm clinic project safety notes",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content C:\\Users\\Paul\\.codex\\memories\\MEMORY.md | Select-Object -Skip 78 -First 14; Select-String -Path C:\\Users\\Paul\\.codex\\memories\\rollout_summaries\\2026-10-21T16-01-11-PfaK-clinic_express_ejs_booking_sqlite_auth_testing.md -Pattern 'DB_PATH|Logged-in booking email|testing be performed autonomously'"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Inspect email integration points and config",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content data/db.js; Get-Content routes/bookingSuccess.js; Get-Content services/appointmentService.js; Get-Content server.js; Get-Content package.json; if (Select-String -Path .env -Pattern '^SMTP_HOST\\s*=\\s*\\S+' -Quiet) { Write-Output SMTP_HOST_PRESENT } else { Write-Output SMTP_HOST_MISSING }; if (Select-String -Path .env -Pattern '^SMTP_PORT\\s*=\\s*\\S+' -Quiet) { Write-Output SMTP_PORT_PRESENT } else { Write-Output SMTP_PORT_MISSING }; if (Select-String -Path .env -Pattern '^SMTP_USER\\s*=\\s*\\S+' -Quiet) { Write-Output SMTP_USER_PRESENT } else { Write-Output SMTP_USER_MISSING }; if (Select-String -Path .env -Pattern '^SMTP_PASS\\s*=\\s*\\S+' -Quiet) { Write-Output SMTP_PASS_PRESENT } else { Write-Output SMTP_PASS_MISSING }; if (Select-String -Path .env -Pattern '^SMTP_FROM\\s*=\\s*\\S+' -Quiet) { Write-Output SMTP_FROM_PRESENT } else { Write-Output SMTP_FROM_MISSING }; Test-Path node_modules/nodemailer"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install Nodemailer SMTP package",
+			"type": "shell",
+			"command": "npm.cmd",
+			"args": [
+				"install",
+				"nodemailer"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check Nodemailer installation",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Test-Path node_modules/nodemailer; Get-Content package.json"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Add SMTP environment placeholders",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Add-Content -LiteralPath .env -Value \"SMTP_HOST=\"; Add-Content -LiteralPath .env -Value \"SMTP_PORT=\"; Add-Content -LiteralPath .env -Value \"SMTP_USER=\"; Add-Content -LiteralPath .env -Value \"SMTP_PASS=\"; Add-Content -LiteralPath .env -Value \"SMTP_FROM=\""
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Validate email integration syntax",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"node --check data/db.js; node --check services/appointmentService.js; node --check services/emailService.js; node --check routes/bookingSuccess.js; npm.cmd ls nodemailer --depth=0; if (Select-String -Path .env -Pattern '^DB_PATH\\s*=\\s*\\S+' -Quiet) { Write-Output CUSTOM_DB_PATH_PRESENT } else { Write-Output USING_DEFAULT_DB_PATH }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Locate clinic app for reload",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"netstat -ano | findstr LISTENING | findstr :3000"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Confirm clinic server process",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-CimInstance Win32_Process -Filter ProcessId=8040 | Select-Object ProcessId,Name,CommandLine"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Stop clinic app before reload",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Stop-Process -Id 8040 -Force"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Check inherited SMTP settings safely",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"if (Test-Path Env:SMTP_HOST) { Write-Output SMTP_HOST_IN_PROCESS } else { Write-Output SMTP_HOST_NOT_IN_PROCESS }; if (Test-Path Env:SMTP_PORT) { Write-Output SMTP_PORT_IN_PROCESS } else { Write-Output SMTP_PORT_NOT_IN_PROCESS }; if (Test-Path Env:SMTP_USER) { Write-Output SMTP_USER_IN_PROCESS } else { Write-Output SMTP_USER_NOT_IN_PROCESS }; if (Test-Path Env:SMTP_PASS) { Write-Output SMTP_PASS_IN_PROCESS } else { Write-Output SMTP_PASS_NOT_IN_PROCESS }; if (Test-Path Env:SMTP_FROM) { Write-Output SMTP_FROM_IN_PROCESS } else { Write-Output SMTP_FROM_NOT_IN_PROCESS }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Locate cited clinic project notes",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Select-String -Path C:\\Users\\Paul\\.codex\\memories\\rollout_summaries\\2026-10-21T16-01-11-PfaK-clinic_express_ejs_booking_sqlite_auth_testing.md -Pattern DB_PATH; Select-String -Path C:\\Users\\Paul\\.codex\\memories\\rollout_summaries\\2026-10-21T16-01-11-PfaK-clinic_express_ejs_booking_sqlite_auth_testing.md -Pattern 'Logged-in booking email'"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Locate authentication note line",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Select-String -Path C:\\Users\\Paul\\.codex\\memories\\rollout_summaries\\2026-10-21T16-01-11-PfaK-clinic_express_ejs_booking_sqlite_auth_testing.md -Pattern 'enforced'"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Read email service and appointment queries",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-Content services/emailService.js; Get-Content services/appointmentService.js; Get-Content server.js"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Add reception staff access setting",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"if (Select-String -Path .env -Pattern \"^RECEPTION_EMAIL\\s*=\" -Quiet) { Write-Output RECEPTION_EMAIL_SETTING_EXISTS } else { Add-Content -LiteralPath .env -Value \"RECEPTION_EMAIL=\"; Write-Output RECEPTION_EMAIL_PLACEHOLDER_ADDED }"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Validate reception reminder code",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"node --check services/emailService.js; node --check services/appointmentService.js; node --check routes/reception.js; node --check server.js; npm.cmd ls nodemailer --depth=0"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Compile reception view",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"node .check-reception-view.js; Remove-Item -LiteralPath .check-reception-view.js -Force"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Locate clinic server before reload",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"netstat -ano | findstr LISTENING | findstr :3000"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Confirm current clinic process",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Get-CimInstance Win32_Process -Filter ProcessId=22168 | Select-Object ProcessId,Name,CommandLine"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Stop old clinic server",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Stop-Process -Id 22168 -Force"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify restarted app routes",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"curl.exe -s -o NUL -w \"%{http_code}\" http://localhost:3000/; curl.exe -s -o NUL -w \" %{http_code} %{redirect_url}\" http://localhost:3000/reception"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start Lakeside Clinic",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"server.js"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
