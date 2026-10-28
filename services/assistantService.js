@@ -1,4 +1,4 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const OpenAI = require('openai');
 
 const SYSTEM_PROMPT = `You are Ask Lakeside, the short and friendly chat assistant for Lakeside Medical.
 
@@ -17,12 +17,12 @@ Keep answers short and friendly. End every reply with exactly this one-line sign
 let client;
 
 function getClient() {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY is not configured');
+  if (!process.env.OPENAI_SECRET_KEY) {
+    throw new Error('OPENAI_SECRET_KEY is not configured');
   }
 
   if (!client) {
-    client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    client = new OpenAI({ apiKey: process.env.OPENAI_SECRET_KEY });
   }
 
   return client;
@@ -45,18 +45,14 @@ async function getAssistantReply(messages) {
     throw new TypeError('the final message must be from the user');
   }
 
-  const response = await getClient().messages.create({
-    model: process.env.ANTHROPIC_MODEL || 'claude-haiku-5-5',
-    max_tokens: 220,
-    system: SYSTEM_PROMPT,
-    messages: safeMessages.slice(-20),
+  const response = await getClient().responses.create({
+    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    instructions: SYSTEM_PROMPT,
+    input: safeMessages.slice(-20),
+    max_output_tokens: 220,
   });
 
-  return response.content
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
-    .join(' ')
-    .trim();
+  return response.output_text.trim();
 }
 
 module.exports = { getAssistantReply };

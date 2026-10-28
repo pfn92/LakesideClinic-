@@ -17,12 +17,12 @@
     "node": "22.x"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.68.0",
     "bcryptjs": "^3.0.3",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.19.0",
     "nodemailer": "^10.2.1",
+    "openai": "^7.45.1",
     "stripe": "^23.0.1"
   }
 }
