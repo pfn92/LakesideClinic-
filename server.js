@@ -2,7 +2,9 @@ const fs = require('node:fs');
 const path = require('path');
 const envPath = path.join(__dirname, '.env');
 
-if (fs.existsSync(envPath)) process.loadEnvFile(envPath);
+if (fs.existsSync(envPath) && typeof process.loadEnvFile === 'function') {
+  process.loadEnvFile(envPath);
+}
 
 const express = require('express');
 const session = require('express-session');
@@ -11,6 +13,7 @@ const bookingSuccessRouter = require('./routes/bookingSuccess');
 const receptionRouter = require('./routes/reception');
 const authRouter = require('./routes/auth');
 const myAppointmentsRouter = require('./routes/myAppointments');
+const chatRouter = require('./routes/chat');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -49,10 +52,12 @@ app.use('/booking-success', bookingSuccessRouter);
 app.use('/reception', receptionRouter);
 app.use('/', authRouter);
 app.use('/my-appointments', myAppointmentsRouter);
+app.use('/api/chat', chatRouter);
 
-app.listen(PORT, () => {
-  console.log(`Lakeside Medical Clinic is running at http://localhost:${PORT}`);
-});
-const chatRouter = require('./routes/chat');
-// Register on the next tick so this stays safe alongside the existing app setup.
-process.nextTick(() => app.use('/api/chat', chatRouter));
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Lakeside Medical Clinic is running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

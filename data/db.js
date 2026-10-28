@@ -3,7 +3,10 @@ const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
 const bcrypt = require('bcryptjs');
 
-const configuredPath = process.env.DB_PATH || path.join(__dirname, 'lakeside.db');
+const defaultDatabasePath = process.env.VERCEL
+  ? path.join('/tmp', 'lakeside.db')
+  : path.join(__dirname, 'lakeside.db');
+const configuredPath = process.env.DB_PATH || defaultDatabasePath;
 const databasePath = path.resolve(configuredPath);
 
 fs.mkdirSync(path.dirname(databasePath), { recursive: true });
